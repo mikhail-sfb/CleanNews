@@ -8,11 +8,17 @@
 import SwiftUI
 
 struct NewsListView: View {
-    @StateObject private var viewModel = NewsViewModel(
-        fetchUseCase: DependencyContainer.shared.makeFetchNewsUseCase())
-
+    @StateObject private var viewModel: NewsViewModel
+    
+    init() {
+        let container = DependencyContainer.shared
+        _viewModel = StateObject(wrappedValue: container.makeNewsViewModel())
+    }
+    
     var body: some View {
-        Text("Ok")
+        List(viewModel.news) {
+            NewsRowView(news: $0)
+        }
         .task {
             await viewModel.fetchNews(newsTopic: "Apple")
         }

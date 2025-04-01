@@ -8,6 +8,7 @@
 enum NewsAPIExceptions: Error {
     case invalidResponse
     case invalidURL
+    case networkError
+    case invalidStatusCode(Int)
     case decodingError(Error)
-    case networkError(Error)
 }

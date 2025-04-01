@@ -7,18 +7,22 @@
 
 final class DependencyContainer {
     static let shared = DependencyContainer()
-    
-    private init() {}
-    
-    private lazy var newsAPIService: NewsAPIServiceProtocol = {
-        NewsAPIService()
-    }()
-    
-    private lazy var newsRepository: NewsAPIRepositoryProtocol = {
+    private let newsAPIService: NewsAPIServiceProtocol
+
+    init(newsAPIService: NewsAPIServiceProtocol = NewsAPIService()) {
+        self.newsAPIService = newsAPIService
+    }
+
+    func makeNewsRepository() -> NewsAPIRepositoryProtocol {
         NewsAPIRepository(newsAPIService: newsAPIService)
-    }()
-    
+    }
+
     func makeFetchNewsUseCase() -> FetchNewsUsecase {
-        FetchNewsUsecase(newsRepository: newsRepository)
+        FetchNewsUsecase(newsRepository: makeNewsRepository())
+    }
+
+    @MainActor
+    func makeNewsViewModel() -> NewsViewModel {
+        NewsViewModel(fetchUseCase: makeFetchNewsUseCase())
     }
 }

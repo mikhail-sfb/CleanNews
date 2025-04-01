@@ -20,13 +20,21 @@ final class NewsAPIService: NewsAPIServiceProtocol {
                 throw NewsAPIExceptions.invalidURL
             }
 
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                200...299 ~= httpResponse.statusCode
+            else {
+                throw NewsAPIExceptions.invalidStatusCode(
+                    (response as? HTTPURLResponse)?.statusCode ?? -1
+                )
+            }
 
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let response = try decoder.decode(NewsResponse.self, from: data)
-            
-            return response.articles
+            let decodedData = try decoder.decode(NewsResponse.self, from: data)
+
+            return decodedData.articles
         } catch let error as DecodingError {
             throw NewsAPIExceptions.decodingError(error)
         } catch {
@@ -35,13 +43,19 @@ final class NewsAPIService: NewsAPIServiceProtocol {
     }
 
     private func createNewsURL(_ topic: String) -> URL? {
-        var urlComponents = URLComponents(string: NEWS_API_URL)
+        var urlComponents = URLComponents(string: APIKeys.newsApiUrl)
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let fromDate = dateFormatter.string(
+            from: Calendar.current.date(byAdding: .day, value: -7, to: Date())
+                ?? Date())
 
         urlComponents?.queryItems = [
             URLQueryItem(name: "q", value: topic),
             URLQueryItem(name: "from", value: "2025-03-01"),
             URLQueryItem(name: "sortBy", value: "popularity"),
-            URLQueryItem(name: "apiKey", value: NEWS_API_KEY),
+            URLQueryItem(name: "apiKey", value: APIKeys.newsApiKey),
         ]
 
         return urlComponents?.url
