@@ -9,12 +9,15 @@ import SwiftUI
 
 @main
 struct NewsReaderApp: App {
-    let persistenceController = PersistenceController.shared
+    @StateObject private var bookmarksViewModel = BookmarkDependencyContainer.makeBookmarkViewModel()
+    
+    let coreDataService = CoreDataService.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            TabsView()
+                .environment(\.managedObjectContext, coreDataService.context)
+                .environmentObject(bookmarksViewModel)
         }
     }
 }
