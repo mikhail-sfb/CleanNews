@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct BookmarkToolbarButton: ToolbarContent {
-    let isFavorite: Bool
     let action: () -> Void
 
     var body: some ToolbarContent {
@@ -16,9 +15,8 @@ struct BookmarkToolbarButton: ToolbarContent {
             Button {
                 action()
             } label: {
-                Image(systemName: isFavorite ? "bookmark.fill" : "bookmark")
-                    .symbolEffect(.bounce, value: isFavorite)
-                    .foregroundColor(isFavorite ? .blue : .primary)
+                Image(systemName: "bookmark.fill")
+                    .foregroundColor(.blue)
             }
         }
     }

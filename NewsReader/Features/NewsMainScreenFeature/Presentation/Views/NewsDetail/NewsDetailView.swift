@@ -36,7 +36,7 @@ struct NewsDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            BookmarkToolbarButton(isFavorite: news.isFavorite) {
+            BookmarkToolbarButton() {
                 if dismissOnToggle {
                     toolBarAction()
                     dismiss()

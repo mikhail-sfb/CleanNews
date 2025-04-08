@@ -6,7 +6,7 @@
 //
 
 final class AddBookmarkUsecase: Usecase {
-    typealias Input = NewsModelProtocol
+    typealias Input = News
     typealias Output = Void
     
     private let bookmarkRepository: BookmarkRepository
@@ -15,7 +15,7 @@ final class AddBookmarkUsecase: Usecase {
         self.bookmarkRepository = bookmarkRepository
     }
     
-    func execute(_ input: NewsModelProtocol) async -> Result<Void, Error> {
+    func execute(_ input: News) async -> Result<Void, Error> {
         await bookmarkRepository.addBookmark(input)
     }
 }

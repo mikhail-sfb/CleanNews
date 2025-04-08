@@ -14,24 +14,39 @@ final class CoreDataBookmarkRepository: BookmarkRepository {
         self.coreDataService = coreDataService
     }
     
-    func addBookmark(_ news: NewsModelProtocol) async -> Result<Void, Error> {
+    func addBookmark(_ news: News) async -> Result<Void, Error> {
         await coreDataService.context.perform {
-            let entity = NewsDataModel(context: self.coreDataService.context)
-            
-            entity.id = UUID()
-            entity.sourceID = news.source?["id"]
-            entity.sourceName = news.source?["name"]
-            entity.author = news.author
-            entity.title = news.title
-            entity.desc = news.description
-            entity.urlString = news.url?.absoluteString
-            entity.imageURLString = news.imageURL?.absoluteString
-            entity.publishedAt = news.publishedAt
-            entity.content = news.content
+            let fetchRequest = NSFetchRequest<NewsDataModel>(entityName: "NewsDataModel")
+            fetchRequest.predicate = NSPredicate(format: "id == %@", news.id as CVarArg)
             
             do {
-                try self.coreDataService.context.save()
-                return .success(())
+                let existingBookmarks = try self.coreDataService.context.fetch(fetchRequest)
+                
+                if let existingBookmark = existingBookmarks.first {
+                    self.coreDataService.context.delete(existingBookmark)
+                    
+                    try self.coreDataService.context.save()
+                    
+                    return .success(())
+                } else {
+                    let entity = NewsDataModel(context: self.coreDataService.context)
+                    
+                    entity.id = news.id
+                    entity.sourceID = news.source?["id"]
+                    entity.sourceName = news.source?["name"]
+                    entity.author = news.author
+                    entity.title = news.title
+                    entity.desc = news.description
+                    entity.urlString = news.url?.absoluteString
+                    entity.imageURLString = news.imageURL?.absoluteString
+                    entity.publishedAt = news.publishedAt
+                    entity.content = news.content
+                    
+                    // Save the context to persist the new bookmark
+                    try self.coreDataService.context.save()
+                    
+                    return .success(())
+                }
             } catch {
                 self.coreDataService.context.rollback()
                 return .failure(error)
